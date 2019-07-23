@@ -1,5 +1,7 @@
 package br.com.caelum.ingresso.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import br.com.caelum.ingresso.dao.SalaDao;
 import br.com.caelum.ingresso.dao.SessaoDao;
 import br.com.caelum.ingresso.model.Sessao;
 import br.com.caelum.ingresso.model.form.SessaoForm;
+import br.com.caelum.ingresso.validacao.GerenciadorDeSessao;
 
 @Controller
 public class SessaoController {
@@ -53,9 +56,20 @@ public class SessaoController {
 		
 		// validando dados atraves do metodo ToSessao da classe SessaoForm
 		Sessao sessao = form.toSessao(salaDao, filmeDao);
-		sessaoDao.save(sessao);
 		
-		return new ModelAndView("redirect:/admin/sala/" + form.getSalaId() + "/sessoes");
+		//Criando uma lista com as sessoes da sala
+		List<Sessao> sessoesDaSala = sessaoDao.buscaSessoesDaSala(sessao.getSala());
+		
+		//instanciando o gerenciador/lógica de validaçáo da sessao
+		GerenciadorDeSessao gerenciador = new GerenciadorDeSessao(sessoesDaSala);
+		
+		//Gerenciando as sessoes verificando se elas acabam no mesmo dia e se nao estáo se encavalando
+		if(gerenciador.cabe(sessao)) {
+			sessaoDao.save(sessao);
+			return new ModelAndView("redirect:/admin/sala/" + form.getSalaId() + "/sessoes");
+		}
+		//Caso náo seja validada a sesao, retorna a view passando como parametro o form preenchido com dados que estáo corretos
+		return form(form.getSalaId(), form); 
 	}
 
 }
