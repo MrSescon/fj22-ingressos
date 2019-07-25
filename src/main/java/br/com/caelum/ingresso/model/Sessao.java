@@ -97,4 +97,14 @@ public class Sessao {
 		this.sala = sala;
 	}
 
+	public Set<Ingresso> getIngressos() {
+		return ingressos;
+	}
+
+	public void setIngressos(Set<Ingresso> ingressos) {
+		this.ingressos = ingressos;
+	}
+	
+	
+
 }
